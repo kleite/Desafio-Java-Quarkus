@@ -1,0 +1,3 @@
+exception/ErrorResponse.class
+br/com/bb/PagamentoService.class
+exception/JsonExceptionMapper.class

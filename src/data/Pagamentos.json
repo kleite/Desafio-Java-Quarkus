@@ -1,0 +1,49 @@
+{
+  "pagamentos": [
+    {
+      "numero_cartao": "1234-5678-9876-5432",
+      "tipo_cliente": 1,
+      "cpf_cnpj": "123.456.789-00",
+      "mes_vencimento": 12,
+      "ano_vencimento": 2025,
+      "cvv": "0123",
+      "valor_pagamento": 250.75
+    },
+    {
+      "numero_cartao": "4321-8765-6789-1234",
+      "tipo_cliente": 2,
+      "cpf_cnpj": "12.345.678/0001-90",
+      "mes_vencimento": 8,
+      "ano_vencimento": 2026,
+      "cvv": "7456",
+      "valor_pagamento": 1200.50
+    },
+    {
+      "numero_cartao": "9876-5432-1234-8765",
+      "tipo_cliente": 1,
+      "cpf_cnpj": "987.654.321-00",
+      "mes_vencimento": 5,
+      "ano_vencimento": 2024,
+      "cvv": "3789",
+      "valor_pagamento": 58.99
+    },
+    {
+      "numero_cartao": "1111-2222-3333-4444",
+      "tipo_cliente": 1,
+      "cpf_cnpj": "222.333.444-55",
+      "mes_vencimento": 1,
+      "ano_vencimento": 2027,
+      "cvv": "9321",
+      "valor_pagamento": 9.99
+    },
+    {
+      "numero_cartao": "5555-6666-7777-8888",
+      "tipo_cliente": 2,
+      "cpf_cnpj": "99.888.777/0001-11",
+      "mes_vencimento": 3,
+      "ano_vencimento": 2028,
+      "cvv": "8654",
+      "valor_pagamento": 452.30
+    }
+  ]
+}
