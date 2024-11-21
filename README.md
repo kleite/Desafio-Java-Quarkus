@@ -16,6 +16,7 @@ O candiado poderá entregar configurações para rodar o microsserviço em conta
 O candidato poderá disponibilizar no código a geração de uma métrica Prometheus através de um endpoint com a assinatura `/metrics`. Pode ser qualquer tipo de métrica (contador, histogram, summary ou gauge)  para ser aplicado nos próprios endpoints implementados.
 
 Sugestão de dados do pagamento:
+    
     - Nº do Pagamento (sequencial, auto-incrementável)
     - Nº do cartão (String, máximo de 19 dígitos, aceitar com e sem "-")
     - Tipo de Pessoa (Numérico, 1 posição - domínio 1 para CPF, 2 para CNPJ)
