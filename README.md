@@ -1,27 +1,66 @@
-# Desafio de Programação em Java Quarkus - Microsserviço de Recebimento e Armazenamento de Pagamento com Cartão de Crédito
- 
-Descrição: Você foi designado para desenvolver um microsserviço em Java Quarkus que recebe dados de um pagamento fictício realizado com cartão de crédito e armazena essas informações. O microsserviço deve validar se os dados recebidos estão no formato correto e, em seguida, persistir essas informações em um banco de dados relacional. Além disso, o microsserviço deve fornecer um endpoint HTTP para receber os dados do pagamento e um mecanismo para consulta posterior desses dados armazenados.
-Requisitos Técnicos:
- 
-Utilize o framework Quarkus para criar o microsserviço Java.
-Crie uma função que receba os dados do pagamento (em formato JSON) e valide se eles estão no formato esperado antes de prosseguir.
-Utilize um banco de dados relacional (por exemplo, PostgreSQL ou MySQL) para armazenar os dados do pagamento. Crie uma tabela adequada para armazenar essas informações.
-Implemente um endpoint HTTP (por exemplo, utilizando JAX-RS) que permita o envio dos dados do pagamento para o microsserviço.
-Forneça uma funcionalidade adicional para consultar os dados de pagamento armazenados no banco de dados.
-Instruções:
-O candidato deve criar um repositório Git para o projeto e fornecer o link quando concluir. (sugestão: GitHub)
-Certifique-se de que os dados de pagamento sejam armazenados corretamente no banco de dados após a validação.
-Opcional:
-O candiado poderá entregar configurações para rodar o microsserviço em container (Dockerfile, docker-compose...)
-O candidato poderá disponibilizar no código a geração de uma métrica Prometheus através de um endpoint com a assinatura `/metrics`. Pode ser qualquer tipo de métrica (contador, histogram, summary ou gauge)  para ser aplicado nos próprios endpoints implementados.
+# desafio-quarkus
 
-Sugestão de dados do pagamento:
-    
-    - Nº do Pagamento (sequencial, auto-incrementável)
-    - Nº do cartão (String, máximo de 19 dígitos, aceitar com e sem "-")
-    - Tipo de Pessoa (Numérico, 1 posição - domínio 1 para CPF, 2 para CNPJ)
-    - CPF/CNPJ do Cliente (máscara padrão)
-    - Mês vencimento cartão (numérico, 1 a 12)
-    - Ano vencimento cartão (numérico, ano com 4 posições)
-    - CVV (String, 4 posições)
-    - Valor do Pagamento (decimal, 2 casas)
+This project uses Quarkus, the Supersonic Subatomic Java Framework.
+
+If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+
+## Running the application in dev mode
+
+You can run your application in dev mode that enables live coding using:
+
+```shell script
+./mvnw compile quarkus:dev
+```
+
+> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+
+## Packaging and running the application
+
+The application can be packaged using:
+
+```shell script
+./mvnw package
+```
+
+It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
+Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+
+The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+
+If you want to build an _über-jar_, execute the following command:
+
+```shell script
+./mvnw package -Dquarkus.package.jar.type=uber-jar
+```
+
+The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+
+## Creating a native executable
+
+You can create a native executable using:
+
+```shell script
+./mvnw package -Dnative
+```
+
+Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+
+```shell script
+./mvnw package -Dnative -Dquarkus.native.container-build=true
+```
+
+You can then execute your native executable with: `./target/desafio-quarkus-1.0.0-SNAPSHOT-runner`
+
+If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+
+## Related Guides
+
+- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
+
+## Provided Code
+
+### REST
+
+Easily start your REST Web Services
+
+[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

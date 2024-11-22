@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.core.JsonParseException;
 import org.jboss.logging.Logger;
 
-// Mapeador de exceções JSON
+// Mapeador de excecoes JSON
 @Provider
 public class JsonExceptionMapper implements ExceptionMapper<Throwable> {
 
@@ -35,7 +35,7 @@ public class JsonExceptionMapper implements ExceptionMapper<Throwable> {
                     .build();
         }
 
-        // Log do erro específico de JSON
+        // Log do erro especifico de JSON
         log.error(errorMessage, exception);
 
         return Response.status(Response.Status.BAD_REQUEST)
