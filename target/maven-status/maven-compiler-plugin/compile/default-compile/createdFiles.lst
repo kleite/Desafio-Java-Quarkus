@@ -1,5 +1,0 @@
-org/acme/EnviaJson.class
-model/Panache.class
-model/TabelaSql.class
-rest/PagamentoSqlResource.class
-org/acme/PagamentoService.class
