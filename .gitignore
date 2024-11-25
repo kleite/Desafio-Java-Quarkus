@@ -1,7 +1,8 @@
-# IntelliJ
-.idea
+.idea/
 *.ipr
 *.iml
 *.iws
 
 *.Identifier
+
+/target
