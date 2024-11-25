@@ -77,11 +77,21 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
+
+
+#FROM docker.binarios.intranet.bb.com.br/bb/dev/dev-java:21.4.6 AS builder
+
+#WORKDIR /app
+
+#COPY pom.xml .
+#COPY src ./src
+
+#RUN mvn clean package -DskipTests
+
 #FROM registry.access.redhat.com/ubi8/openjdk-21:1.20
 FROM docker.binarios.intranet.bb.com.br/bb/dev/dev-java:21.4.6
 
 ENV LANGUAGE='en_US:en'
-
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
