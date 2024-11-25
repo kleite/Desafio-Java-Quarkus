@@ -1,6 +1,0 @@
-/home/wsl/Documents/desafio-quarkus/src/main/java/br/com/bb/PagamentoService.java
-/home/wsl/Documents/desafio-quarkus/src/main/java/exception/ErrorResponse.java
-/home/wsl/Documents/desafio-quarkus/src/main/java/exception/JsonExceptionMapper.java
-/home/wsl/Documents/desafio-quarkus/src/main/java/model/Panache.java
-/home/wsl/Documents/desafio-quarkus/src/main/java/model/TabelaSql.java
-/home/wsl/Documents/desafio-quarkus/src/main/java/rest/PagamentoSqlResource.java

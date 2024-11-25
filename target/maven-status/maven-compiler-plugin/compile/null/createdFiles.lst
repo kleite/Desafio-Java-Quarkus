@@ -1,6 +1,0 @@
-model/Panache.class
-exception/ErrorResponse.class
-model/TabelaSql.class
-br/com/bb/PagamentoService.class
-rest/PagamentoSqlResource.class
-exception/JsonExceptionMapper.class
