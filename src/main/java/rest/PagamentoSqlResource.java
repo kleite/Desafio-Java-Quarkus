@@ -4,12 +4,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import model.TabelaSql;
+import model.Pagamentos;
 import br.com.bb.PagamentoService;
 import java.util.List;
 import org.jboss.logging.Logger;
 
-@Path("/pagamentosql")
+@Path("/pagamentos")
 public class PagamentoSqlResource {
 
     private static final Logger log = Logger.getLogger(PagamentoSqlResource.class);
@@ -20,11 +20,11 @@ public class PagamentoSqlResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response criarPagamento(TabelaSql tabelaSql) throws Exception {
+    public Response criarPagamento(Pagamentos pagamentos) throws Exception {
         try {
-            pagamentoService.salvarPagamento(tabelaSql);
+            pagamentoService.salvarPagamento(pagamentos);
             return Response.status(Response.Status.CREATED)
-                    .entity(tabelaSql)
+                    .entity(pagamentos)
                     .build();
         }
         catch (Exception e) {
@@ -38,7 +38,7 @@ public class PagamentoSqlResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response obterPagamentos() {
-        List<TabelaSql> pagamentos = pagamentoService.obterPagamentos();
+        List<Pagamentos> pagamentos = pagamentoService.obterPagamentos();
         return Response.ok(pagamentos).build();
     }
 

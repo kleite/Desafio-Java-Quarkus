@@ -2,13 +2,11 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "pagamentos")
-public class TabelaSql {
+public class Pagamentos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,9 +3,8 @@ package br.com.bb;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import model.TabelaSql;
+import model.Pagamentos;
 import model.Panache;
-
 import java.time.YearMonth;
 import java.util.List;
 import org.jboss.logging.Logger;
@@ -20,40 +19,43 @@ public class PagamentoService {
     Panache panache;
 
     @Transactional
-    public void salvarPagamento(TabelaSql tabelaSql) throws Exception {
+    public void salvarPagamento(Pagamentos pagamentos) throws Exception {
 
+        byte tipoClienteCpf = 1;
+        byte tipoClienteCnpj = 2;
 
             // Validacao do numero do cartao
-            if (tabelaSql.getNumeroCartao() == null
-                    || !tabelaSql.getNumeroCartao().matches("^\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}$")
-                    || tabelaSql.getNumeroCartao().replaceAll("[-\\s]", "").length() > 19) {
+            if (pagamentos.getNumeroCartao() == null
+                    || !pagamentos.getNumeroCartao().matches("^\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}$")
+                    || pagamentos.getNumeroCartao().replaceAll("[-\\s]", "").length() > 19) {
                 String mensagemDeErro = "O número do cartão informado é inválido.";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
 
-            String numeroCartaoFormatado = tabelaSql.getNumeroCartao()
+            String numeroCartaoFormatado = pagamentos.getNumeroCartao()
                     .replaceAll("[-\\s]",
                             "");
             numeroCartaoFormatado = numeroCartaoFormatado.replaceAll("(\\d{4})(?=\\d)",
                     "$1-");
-            tabelaSql.setNumeroCartao(numeroCartaoFormatado);
+            pagamentos.setNumeroCartao(numeroCartaoFormatado);
 
             // Validacao do cvv
-            if (tabelaSql.getCvv() == null || !tabelaSql.getCvv().matches("\\d{4}")) {
-                String mensagemDeErro = "O cvv informado está em um formato inválido.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
+            validaCvv(pagamentos);
+//            if (pagamentos.getCvv() == null || !pagamentos.getCvv().matches("\\d{4}")) {
+//                String mensagemDeErro = "O cvv informado está em um formato inválido.";
+//                log.error(mensagemDeErro);
+//                throw new Exception(mensagemDeErro);
+//            }
             // Validacao do valor do pagamento
-            if (tabelaSql.getValorPagamento() == null
-                    || tabelaSql.getValorPagamento().compareTo(BigDecimal.ZERO) == 0) {
+            if (pagamentos.getValorPagamento() == null
+                    || pagamentos.getValorPagamento().compareTo(BigDecimal.ZERO) == 0) {
                 String mensagemDeErro = "O valor do pagamento não pode ser vazio ou nulo.";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
 
-            String valorPagamentoString = tabelaSql.getValorPagamento()
+            String valorPagamentoString = pagamentos.getValorPagamento()
                                                    .toPlainString();
 
             if (!valorPagamentoString.matches("\\d+\\.\\d{2}")) {
@@ -62,15 +64,15 @@ public class PagamentoService {
                 throw new Exception(mensagemDeErro);
             }
 
-            tabelaSql.setValorPagamento(new BigDecimal(valorPagamentoString));
+            pagamentos.setValorPagamento(new BigDecimal(valorPagamentoString));
 
             // Validacao do mes do vencimento
-            if (tabelaSql.getMesVencimento() == null) {
+            if (pagamentos.getMesVencimento() == null) {
                 String mensagemDeErro = "O mês do vencimento não pode está vazio.";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
-            if ((tabelaSql.getMesVencimento() < 1 || tabelaSql.getMesVencimento() > 12)) {
+            if ((pagamentos.getMesVencimento() < 1 || pagamentos.getMesVencimento() > 12)) {
                 String mensagemDeErro = "O mês do vencimento informado é inválido. Forneça um número de 1 a 12.";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
@@ -78,8 +80,8 @@ public class PagamentoService {
 
             //Validacao da validade do cartao
             YearMonth currentDate = YearMonth.now();
-            YearMonth cardExpiryDate = YearMonth.of(tabelaSql.getAnoVencimento(),
-                    tabelaSql.getMesVencimento());
+            YearMonth cardExpiryDate = YearMonth.of(pagamentos.getAnoVencimento(),
+                    pagamentos.getMesVencimento());
 
             if (cardExpiryDate.isBefore(currentDate)) {
                 String mensagemDeErro = "O cartão está fora da validade.";
@@ -88,50 +90,59 @@ public class PagamentoService {
             }
 
             // Validacao do tipo do cliente
-            if (tabelaSql.getTipoCliente() == null) {
+            if (pagamentos.getTipoCliente() == null) {
                 String mensagemDeErro = "O campo tipo do cliente não pode ser vazio. Preencha 1 para CPF e 2 para CNPJ.";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
 
-            if (tabelaSql.getTipoCliente() != 1 && tabelaSql.getTipoCliente() != 2) {
+            if (pagamentos.getTipoCliente() != tipoClienteCpf && pagamentos.getTipoCliente() != tipoClienteCnpj) {
                 String mensagemDeErro = "Tipo de cliente inválido. Preencha 1 para CPF e 2 para CNPJ.";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
 
             // Validacao do campo cpf_cnpj
-            if (tabelaSql.getCpfCnpj() == null || tabelaSql.getCpfCnpj().isEmpty()) {
+            if (pagamentos.getCpfCnpj() == null || pagamentos.getCpfCnpj().isEmpty()) {
                 String mensagemDeErro = "Forneça um CPF (tipo do cliente = 1) ou um CNPJ (tipo do cliente = 2).";
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
 
             // Se o tipo do cliente for 1 (CPF)
-            if (tabelaSql.getTipoCliente() == 1) {
-                if (!validarCPF(tabelaSql.getCpfCnpj())) {
+            if (pagamentos.getTipoCliente() == tipoClienteCpf) {
+                if (!validarCPF(pagamentos.getCpfCnpj())) {
                     String mensagemDeErro = "CPF em formato inválido. Forneça um CPF no formato XXX.XXX.XXX-XX";
                     log.error(mensagemDeErro);
                     throw new Exception(mensagemDeErro);
                 }
 
-                tabelaSql.setCpfCnpj(formatarCPF(tabelaSql.getCpfCnpj()));
+                pagamentos.setCpfCnpj(formatarCPF(pagamentos.getCpfCnpj()));
             }
 
             // Se o tipo do cliente for 2 (CNPJ)
-            else if (tabelaSql.getTipoCliente() == 2) {
-                if (!validarCNPJ(tabelaSql.getCpfCnpj())) {
+            else if (pagamentos.getTipoCliente() == tipoClienteCnpj) {
+                if (!validarCNPJ(pagamentos.getCpfCnpj())) {
                     String mensagemDeErro = "CNPJ em formato inválido. Forneça um CNPJ no formato XX.XXX.XXX/XXXX-XX";
                     log.error(mensagemDeErro);
                     throw new Exception(mensagemDeErro);
                 }
 
-                tabelaSql.setCpfCnpj(formatarCNPJ(tabelaSql.getCpfCnpj()));
+                pagamentos.setCpfCnpj(formatarCNPJ(pagamentos.getCpfCnpj()));
             }
 
-            panache.persist(tabelaSql);
+            panache.persist(pagamentos);
     }
     // Metodos
+
+    protected void validaCvv(Pagamentos pagamentos) throws Exception{
+        if (pagamentos.getCvv() == null || !pagamentos.getCvv().matches("\\d{4}")) {
+            String mensagemDeErro = "O cvv informado está em um formato inválido.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
     private boolean validarCPF(String cpf) {
         return cpf != null && cpf.matches("\\d{11}")
                 || cpf.matches("^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$");
@@ -150,7 +161,7 @@ public class PagamentoService {
         return cnpj.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
     }
 
-    public List<TabelaSql> obterPagamentos () {
+    public List<Pagamentos> obterPagamentos () {
         return panache.listAll();
     }
 }
