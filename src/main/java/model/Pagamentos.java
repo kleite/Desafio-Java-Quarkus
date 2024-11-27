@@ -23,7 +23,7 @@ public class Pagamentos {
     private String cpfCnpj;
 
     @JsonProperty("mes_vencimento")
-    private int mesVencimento;
+    private Integer mesVencimento;
 
     @JsonProperty("ano_vencimento")
     private Integer anoVencimento;
@@ -74,11 +74,11 @@ public class Pagamentos {
         this.mesVencimento = mesVencimento;
     }
 
-    public int getAnoVencimento() {
+    public Integer getAnoVencimento() {
         return anoVencimento;
     }
 
-    public void setAnoVencimento(int anoVencimento) {
+    public void setAnoVencimento(Integer anoVencimento) {
         this.anoVencimento = anoVencimento;
     }
 

@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 @ApplicationScoped
 public class PagamentoService {
 
+    private static final byte TIPO_CLIENTE_CPF = 1;
+    private static final byte TIPO_CLIENTE_CNPJ = 2
     private static final Logger log = Logger.getLogger(PagamentoService.class);
 
     @Inject
@@ -21,32 +23,19 @@ public class PagamentoService {
     @Transactional
     public void salvarPagamento(Pagamentos pagamentos) throws Exception {
 
-        byte tipoClienteCpf = 1;
-        byte tipoClienteCnpj = 2;
+        validaCvv(pagamentos);
+        validaMesVencimento(pagamentos);
+        validaAnoVencimento(pagamentos);
+        validaVencimento(pagamentos);
+        validaTipoCliente(pagamentos);
+        //validarCPF(cpf);
+        //validarCNPJ(cnpj);
+        validaNumeroCartao(pagamentos);
 
-            // Validacao do numero do cartao
-            if (pagamentos.getNumeroCartao() == null
-                    || !pagamentos.getNumeroCartao().matches("^\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}$")
-                    || pagamentos.getNumeroCartao().replaceAll("[-\\s]", "").length() > 19) {
-                String mensagemDeErro = "O número do cartão informado é inválido.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
+        //formatarCPF(cpfValidado);
+        //formatarCNPJ(cnpjValidado);
+        formataNumeroCartao();
 
-            String numeroCartaoFormatado = pagamentos.getNumeroCartao()
-                    .replaceAll("[-\\s]",
-                            "");
-            numeroCartaoFormatado = numeroCartaoFormatado.replaceAll("(\\d{4})(?=\\d)",
-                    "$1-");
-            pagamentos.setNumeroCartao(numeroCartaoFormatado);
-
-            // Validacao do cvv
-            validaCvv(pagamentos);
-//            if (pagamentos.getCvv() == null || !pagamentos.getCvv().matches("\\d{4}")) {
-//                String mensagemDeErro = "O cvv informado está em um formato inválido.";
-//                log.error(mensagemDeErro);
-//                throw new Exception(mensagemDeErro);
-//            }
             // Validacao do valor do pagamento
             if (pagamentos.getValorPagamento() == null
                     || pagamentos.getValorPagamento().compareTo(BigDecimal.ZERO) == 0) {
@@ -66,42 +55,6 @@ public class PagamentoService {
 
             pagamentos.setValorPagamento(new BigDecimal(valorPagamentoString));
 
-            // Validacao do mes do vencimento
-            if (pagamentos.getMesVencimento() == null) {
-                String mensagemDeErro = "O mês do vencimento não pode está vazio.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
-            if ((pagamentos.getMesVencimento() < 1 || pagamentos.getMesVencimento() > 12)) {
-                String mensagemDeErro = "O mês do vencimento informado é inválido. Forneça um número de 1 a 12.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
-
-            //Validacao da validade do cartao
-            YearMonth currentDate = YearMonth.now();
-            YearMonth cardExpiryDate = YearMonth.of(pagamentos.getAnoVencimento(),
-                    pagamentos.getMesVencimento());
-
-            if (cardExpiryDate.isBefore(currentDate)) {
-                String mensagemDeErro = "O cartão está fora da validade.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
-
-            // Validacao do tipo do cliente
-            if (pagamentos.getTipoCliente() == null) {
-                String mensagemDeErro = "O campo tipo do cliente não pode ser vazio. Preencha 1 para CPF e 2 para CNPJ.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
-
-            if (pagamentos.getTipoCliente() != tipoClienteCpf && pagamentos.getTipoCliente() != tipoClienteCnpj) {
-                String mensagemDeErro = "Tipo de cliente inválido. Preencha 1 para CPF e 2 para CNPJ.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
-
             // Validacao do campo cpf_cnpj
             if (pagamentos.getCpfCnpj() == null || pagamentos.getCpfCnpj().isEmpty()) {
                 String mensagemDeErro = "Forneça um CPF (tipo do cliente = 1) ou um CNPJ (tipo do cliente = 2).";
@@ -110,7 +63,7 @@ public class PagamentoService {
             }
 
             // Se o tipo do cliente for 1 (CPF)
-            if (pagamentos.getTipoCliente() == tipoClienteCpf) {
+            if (pagamentos.getTipoCliente() == TIPO_CLIENTE_CPF) {
                 if (!validarCPF(pagamentos.getCpfCnpj())) {
                     String mensagemDeErro = "CPF em formato inválido. Forneça um CPF no formato XXX.XXX.XXX-XX";
                     log.error(mensagemDeErro);
@@ -121,7 +74,7 @@ public class PagamentoService {
             }
 
             // Se o tipo do cliente for 2 (CNPJ)
-            else if (pagamentos.getTipoCliente() == tipoClienteCnpj) {
+            else if (pagamentos.getTipoCliente() == TIPO_CLIENTE_CNPJ) {
                 if (!validarCNPJ(pagamentos.getCpfCnpj())) {
                     String mensagemDeErro = "CNPJ em formato inválido. Forneça um CNPJ no formato XX.XXX.XXX/XXXX-XX";
                     log.error(mensagemDeErro);
@@ -133,11 +86,63 @@ public class PagamentoService {
 
             panache.persist(pagamentos);
     }
-    // Metodos
 
+    // Metodos
     private void validaCvv(Pagamentos pagamentos) throws Exception{
         if (pagamentos.getCvv() == null || !pagamentos.getCvv().matches("\\d{4}")) {
             String mensagemDeErro = "O cvv informado está em um formato inválido.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
+    private void validaMesVencimento(Pagamentos pagamentos) throws Exception{
+        if (pagamentos.getMesVencimento() == null) {
+            String mensagemDeErro = "O mês do vencimento não pode está vazio.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+        if ((pagamentos.getMesVencimento() < 1 || pagamentos.getMesVencimento() > 12)) {
+            String mensagemDeErro = "O mês do vencimento informado é inválido. Forneça um número de 1 a 12.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
+    private void validaAnoVencimento(Pagamentos pagamentos) throws Exception{
+        if (pagamentos.getAnoVencimento() == null) {
+            String mensagemDeErro = "O ano do vencimento não pode está vazio.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+        if (!String.valueOf(pagamentos.getAnoVencimento()).matches("\\d{4,}")) {
+            String mensagemDeErro = "O ano do vencimento informado é inválido. Forneça um ano no formato XXXX.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
+    private void validaVencimento(Pagamentos pagamentos) throws Exception{
+        YearMonth mesAnoAtual = YearMonth.now();
+        YearMonth mesAnoValidade = YearMonth.of(pagamentos.getAnoVencimento(),
+                pagamentos.getMesVencimento());
+
+        if (mesAnoValidade.isBefore(mesAnoAtual)) {
+            String mensagemDeErro = "O cartão está fora da validade.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
+    private void validaTipoCliente(Pagamentos pagamentos) throws Exception{
+        if (pagamentos.getTipoCliente() == null) {
+            String mensagemDeErro = "O campo tipo do cliente não pode ser vazio. Preencha 1 para CPF e 2 para CNPJ.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+
+        if (pagamentos.getTipoCliente() != TIPO_CLIENTE_CPF && pagamentos.getTipoCliente() != TIPO_CLIENTE_CNPJ) {
+            String mensagemDeErro = "Tipo de cliente inválido. Preencha 1 para CPF e 2 para CNPJ.";
             log.error(mensagemDeErro);
             throw new Exception(mensagemDeErro);
         }
@@ -159,6 +164,26 @@ public class PagamentoService {
 
     private String formatarCNPJ(String cnpj) {
         return cnpj.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
+    }
+
+    private String validaNumeroCartao(Pagamentos pagamentos) throws Exception {
+        if (pagamentos.getNumeroCartao() == null
+                || !pagamentos.getNumeroCartao().matches("^\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}$")
+                || pagamentos.getNumeroCartao().replaceAll("[-\\s]", "").length() > 19) {
+            String mensagemDeErro = "O número do cartão informado é inválido.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
+    private void formataNumeroCartao(Pagamentos pagamentos){
+            String numeroCartaoFormatado = pagamentos.getNumeroCartao()
+                    .replaceAll("[-\\s]",
+                            "");
+            numeroCartaoFormatado = numeroCartaoFormatado.replaceAll("(\\d{4})(?=\\d)",
+                    "$1-");
+            pagamentos.setNumeroCartao(numeroCartaoFormatado);
+        }
     }
 
     public List<Pagamentos> obterPagamentos () {

@@ -6,11 +6,8 @@ import model.Pagamentos;
 import model.Panache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-
 import java.math.BigDecimal;
 import java.time.YearMonth;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -19,19 +16,16 @@ import static org.mockito.Mockito.*;
 public class PagamentoServiceTest {
 
     @InjectMock
-    private Panache panache; // Mock da dependência Panache
-
+    private Panache panache;
     private PagamentoService pagamentoService;
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         pagamentoService = new PagamentoService();
-        pagamentoService.panache = panache; // Injeção do mock na classe de serviço
+        pagamentoService.panache = panache;
     }
 
-    @Test
-    public void testSalvarPagamento() throws Exception {
+    private Pagamentos criaPagamentoPadrao() {
         Pagamentos pagamento = new Pagamentos();
         pagamento.setNumeroCartao("1234-5678-1234-5678");
         pagamento.setCvv("1234");
@@ -40,27 +34,54 @@ public class PagamentoServiceTest {
         pagamento.setAnoVencimento(YearMonth.now().getYear() + 1);
         pagamento.setTipoCliente((byte) 1);
         pagamento.setCpfCnpj("123.456.789-00");
-
-        pagamentoService.salvarPagamento(pagamento);
+        return pagamento;
     }
 
     @Test
-    public void testSalvarPagamentoNumeroCartaoInvalido() {
-        Pagamentos pagamento = new Pagamentos();
-        pagamento.setNumeroCartao("1234");
+    public void testSalvarPagamento() throws Exception{
+        Pagamentos pagamento = criaPagamentoPadrao();
+        pagamentoService.salvarPagamento(pagamento);
+        verify(panache).persist(pagamento);
+    }
 
+    @Test
+    public void testSalvarPagamentoNumeroCartaoMenor() {
+        Pagamentos pagamento = criaPagamentoPadrao();
+        pagamento.setNumeroCartao("1234");
         Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
         assertEquals("O número do cartão informado é inválido.", exception.getMessage());
     }
 
     @Test
-    public void testSalvarPagamentoCvvInvalido() {
-        Pagamentos pagamento = new Pagamentos();
-        pagamento.setNumeroCartao("1234-5678-1234-5678");
+    public void testaSalvarPagamentoCvvInvalido() {
+        Pagamentos pagamento = criaPagamentoPadrao();
         pagamento.setCvv("12345");
-
         Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
         assertEquals("O cvv informado está em um formato inválido.", exception.getMessage());
     }
 
+    @Test
+    public void testaMesVencimento() {
+        Pagamentos pagamento = criaPagamentoPadrao();
+        pagamento.setMesVencimento(Integer.parseInt("13"));
+        Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
+        assertEquals("O mês do vencimento informado é inválido. Forneça um número de 1 a 12.", exception.getMessage());
+    }
+
+    @Test
+    public void testaAnoVencimento() {
+        Pagamentos pagamento = criaPagamentoPadrao();
+        pagamento.setAnoVencimento(Integer.parseInt("202"));
+        Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
+        assertEquals("O ano do vencimento informado é inválido. Forneça um ano no formato XXXX.", exception.getMessage());
+    }
+
+    @Test
+    public void testaVencimentoCartao() {
+        Pagamentos pagamento = criaPagamentoPadrao();
+        pagamento.setMesVencimento(Integer.parseInt("10"));
+        pagamento.setAnoVencimento(Integer.parseInt("2024"));
+        Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
+        assertEquals("O cartão está fora da validade.", exception.getMessage());
+    }
 }
