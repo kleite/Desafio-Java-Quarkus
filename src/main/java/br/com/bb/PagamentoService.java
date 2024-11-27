@@ -135,7 +135,7 @@ public class PagamentoService {
     }
     // Metodos
 
-    protected void validaCvv(Pagamentos pagamentos) throws Exception{
+    private void validaCvv(Pagamentos pagamentos) throws Exception{
         if (pagamentos.getCvv() == null || !pagamentos.getCvv().matches("\\d{4}")) {
             String mensagemDeErro = "O cvv informado está em um formato inválido.";
             log.error(mensagemDeErro);
