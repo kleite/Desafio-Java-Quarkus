@@ -1,5 +1,6 @@
 package br.com.bb;
 
+import io.quarkus.arc.ArcContainer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 public class PagamentoService {
 
     private static final byte TIPO_CLIENTE_CPF = 1;
-    private static final byte TIPO_CLIENTE_CNPJ = 2
+    private static final byte TIPO_CLIENTE_CNPJ = 2;
     private static final Logger log = Logger.getLogger(PagamentoService.class);
 
     @Inject
@@ -28,32 +29,14 @@ public class PagamentoService {
         validaAnoVencimento(pagamentos);
         validaVencimento(pagamentos);
         validaTipoCliente(pagamentos);
-        //validarCPF(cpf);
-        //validarCNPJ(cnpj);
         validaNumeroCartao(pagamentos);
 
-        //formatarCPF(cpfValidado);
-        //formatarCNPJ(cnpjValidado);
-        formataNumeroCartao();
+        formataNumeroCartao(pagamentos);
 
             // Validacao do valor do pagamento
-            if (pagamentos.getValorPagamento() == null
-                    || pagamentos.getValorPagamento().compareTo(BigDecimal.ZERO) == 0) {
-                String mensagemDeErro = "O valor do pagamento não pode ser vazio ou nulo.";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
 
-            String valorPagamentoString = pagamentos.getValorPagamento()
-                                                   .toPlainString();
 
-            if (!valorPagamentoString.matches("\\d+\\.\\d{2}")) {
-                String mensagemDeErro = "O valor do pagamento deve ser um número positivo com duas casas decimais separadas por um ponto";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
 
-            pagamentos.setValorPagamento(new BigDecimal(valorPagamentoString));
 
             // Validacao do campo cpf_cnpj
             if (pagamentos.getCpfCnpj() == null || pagamentos.getCpfCnpj().isEmpty()) {
@@ -166,7 +149,7 @@ public class PagamentoService {
         return cnpj.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
     }
 
-    private String validaNumeroCartao(Pagamentos pagamentos) throws Exception {
+    private void validaNumeroCartao(Pagamentos pagamentos) throws Exception {
         if (pagamentos.getNumeroCartao() == null
                 || !pagamentos.getNumeroCartao().matches("^\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}(-|\\s)?\\d{4}$")
                 || pagamentos.getNumeroCartao().replaceAll("[-\\s]", "").length() > 19) {
@@ -184,6 +167,25 @@ public class PagamentoService {
                     "$1-");
             pagamentos.setNumeroCartao(numeroCartaoFormatado);
         }
+
+        private void validaValorPagamento (Pagamentos pagamentos) throws Exception{
+        if (pagamentos.getValorPagamento() == null
+                || pagamentos.getValorPagamento().compareTo(BigDecimal.ZERO) == 0) {
+            String mensagemDeErro = "O valor do pagamento não pode ser vazio ou nulo.";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+
+        String valorPagamentoString = pagamentos.getValorPagamento()
+                .toPlainString();
+
+            if (!valorPagamentoString.matches("\\d+\\.\\d{2}")) {
+                String mensagemDeErro = "O valor do pagamento deve ser um número positivo com duas casas decimais separadas por um ponto";
+                log.error(mensagemDeErro);
+                throw new Exception(mensagemDeErro);
+            }
+
+            pagamentos.setValorPagamento(new BigDecimal(valorPagamentoString));
     }
 
     public List<Pagamentos> obterPagamentos () {
