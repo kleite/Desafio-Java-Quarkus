@@ -7,6 +7,7 @@ import model.Panache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -81,6 +82,16 @@ public class PagamentoServiceTest {
         Pagamentos pagamento = criaPagamentoPadrao();
         pagamento.setMesVencimento(Integer.parseInt("10"));
         pagamento.setAnoVencimento(Integer.parseInt("2024"));
+        Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
+        assertEquals("O cartão está fora da validade.", exception.getMessage());
+    }
+
+    @Test
+    public void testaVencimentoCartao2() {
+        Pagamentos pagamento = criaPagamentoPadrao();
+        LocalDate MesAnteriorAnoAtual = LocalDate.now().minusMonths(1);
+        pagamento.setMesVencimento(MesAnteriorAnoAtual.getMonthValue());
+        pagamento.setAnoVencimento(MesAnteriorAnoAtual.getYear());
         Exception exception = assertThrows(Exception.class, () -> pagamentoService.salvarPagamento(pagamento));
         assertEquals("O cartão está fora da validade.", exception.getMessage());
     }

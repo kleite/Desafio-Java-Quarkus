@@ -1,6 +1,5 @@
 package br.com.bb;
 
-import io.quarkus.arc.ArcContainer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -30,43 +29,10 @@ public class PagamentoService {
         validaVencimento(pagamentos);
         validaTipoCliente(pagamentos);
         validaNumeroCartao(pagamentos);
+        validaCpfCnpj(pagamentos);
+        validaTipoCienteCpfCnpj(pagamentos);
 
         formataNumeroCartao(pagamentos);
-
-            // Validacao do valor do pagamento
-
-
-
-
-            // Validacao do campo cpf_cnpj
-            if (pagamentos.getCpfCnpj() == null || pagamentos.getCpfCnpj().isEmpty()) {
-                String mensagemDeErro = "Forneça um CPF (tipo do cliente = 1) ou um CNPJ (tipo do cliente = 2).";
-                log.error(mensagemDeErro);
-                throw new Exception(mensagemDeErro);
-            }
-
-            // Se o tipo do cliente for 1 (CPF)
-            if (pagamentos.getTipoCliente() == TIPO_CLIENTE_CPF) {
-                if (!validarCPF(pagamentos.getCpfCnpj())) {
-                    String mensagemDeErro = "CPF em formato inválido. Forneça um CPF no formato XXX.XXX.XXX-XX";
-                    log.error(mensagemDeErro);
-                    throw new Exception(mensagemDeErro);
-                }
-
-                pagamentos.setCpfCnpj(formatarCPF(pagamentos.getCpfCnpj()));
-            }
-
-            // Se o tipo do cliente for 2 (CNPJ)
-            else if (pagamentos.getTipoCliente() == TIPO_CLIENTE_CNPJ) {
-                if (!validarCNPJ(pagamentos.getCpfCnpj())) {
-                    String mensagemDeErro = "CNPJ em formato inválido. Forneça um CNPJ no formato XX.XXX.XXX/XXXX-XX";
-                    log.error(mensagemDeErro);
-                    throw new Exception(mensagemDeErro);
-                }
-
-                pagamentos.setCpfCnpj(formatarCNPJ(pagamentos.getCpfCnpj()));
-            }
-
             panache.persist(pagamentos);
     }
 
@@ -168,7 +134,7 @@ public class PagamentoService {
             pagamentos.setNumeroCartao(numeroCartaoFormatado);
         }
 
-        private void validaValorPagamento (Pagamentos pagamentos) throws Exception{
+    private void validaValorPagamento (Pagamentos pagamentos) throws Exception{
         if (pagamentos.getValorPagamento() == null
                 || pagamentos.getValorPagamento().compareTo(BigDecimal.ZERO) == 0) {
             String mensagemDeErro = "O valor do pagamento não pode ser vazio ou nulo.";
@@ -184,8 +150,38 @@ public class PagamentoService {
                 log.error(mensagemDeErro);
                 throw new Exception(mensagemDeErro);
             }
-
             pagamentos.setValorPagamento(new BigDecimal(valorPagamentoString));
+    }
+
+    private void validaCpfCnpj(Pagamentos pagamentos) throws Exception{
+        if (pagamentos.getCpfCnpj() == null || pagamentos.getCpfCnpj().isEmpty()) {
+            String mensagemDeErro = "Forneça um CPF (tipo do cliente = 1) ou um CNPJ (tipo do cliente = 2).";
+            log.error(mensagemDeErro);
+            throw new Exception(mensagemDeErro);
+        }
+    }
+
+    private void validaTipoCienteCpfCnpj(Pagamentos pagamentos) throws Exception{
+        // Se o tipo do cliente for 1 (CPF)
+        if (pagamentos.getTipoCliente() == TIPO_CLIENTE_CPF) {
+            if (!validarCPF(pagamentos.getCpfCnpj())) {
+                String mensagemDeErro = "CPF em formato inválido. Forneça um CPF no formato XXX.XXX.XXX-XX";
+                log.error(mensagemDeErro);
+                throw new Exception(mensagemDeErro);
+            }
+
+            pagamentos.setCpfCnpj(formatarCPF(pagamentos.getCpfCnpj()));
+        }
+
+        // Se o tipo do cliente for 2 (CNPJ)
+        else if (pagamentos.getTipoCliente() == TIPO_CLIENTE_CNPJ) {
+            if (!validarCNPJ(pagamentos.getCpfCnpj())) {
+                String mensagemDeErro = "CNPJ em formato inválido. Forneça um CNPJ no formato XX.XXX.XXX/XXXX-XX";
+                log.error(mensagemDeErro);
+                throw new Exception(mensagemDeErro);
+            }
+            pagamentos.setCpfCnpj(formatarCNPJ(pagamentos.getCpfCnpj()));
+        }
     }
 
     public List<Pagamentos> obterPagamentos () {
