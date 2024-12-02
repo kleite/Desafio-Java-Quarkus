@@ -7,6 +7,7 @@ services:
       context: ./
       dockerfile: src/main/docker/Dockerfile.${QUARKUS_MODE:-jvm}
     environment:
+      QUARKUS_PROFILE: dev
       QUARKUS_DATASOURCE_URL: jdbc:mysql://mysql-desafio-quarkus:3306/Pagamentos?autoReconnect=true
     networks:
       - mysql-db
@@ -30,6 +31,13 @@ services:
       - 3307:3306
     networks:
       - mysql-db
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
 networks:
   mysql-db:
