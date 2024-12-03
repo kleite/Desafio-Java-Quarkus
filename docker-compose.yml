@@ -7,12 +7,12 @@ services:
       context: ./
       dockerfile: src/main/docker/Dockerfile.${QUARKUS_MODE:-jvm}
     environment:
-      QUARKUS_PROFILE: dev
+#      QUARKUS_PROFILE: dev
       QUARKUS_DATASOURCE_URL: jdbc:mysql://mysql-desafio-quarkus:3306/Pagamentos?autoReconnect=true
     networks:
       - mysql-db
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
       - mysql-desafio-quarkus
 
@@ -28,16 +28,29 @@ services:
       - mysql.desafio.quarkus:/var/lib/mysql
       - ./:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - 3307:3306
+      - "3307:3306"
     networks:
       - mysql-db
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:latest
+    container_name: quarkus-desafio-prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - mysql-db
+
+  grafana:
+    image: grafana/grafana
+    container_name: quarkus-desafio-grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - mysql-db
+    depends_on:
+      - prometheus
 
 networks:
   mysql-db:

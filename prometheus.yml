@@ -4,7 +4,8 @@ global:
 
 scrape_configs:
   - job_name: 'quarkus-app'
+    metrics_path: /q/metrics
     static_configs:
-      - targets: ['quarkus-app:8080']
+      - targets: ['quarkus-desafio:8080']
         labels:
           env: 'development'
