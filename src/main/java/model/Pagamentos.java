@@ -2,7 +2,6 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 
 @Entity
